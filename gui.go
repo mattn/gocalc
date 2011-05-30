@@ -2,13 +2,15 @@ package main
 
 import (
 	"gtk"
+	"gdk"
 	"os"
+	"unsafe"
 	"strings"
 	"strconv"
 )
 
 var (
-	display    *gtk.GtkEntry // where values are displayed
+	display   *gtk.GtkEntry // where values are displayed
 	inputMode = true
 	nums      = "789/456x123-0.=+"
 	operators = "/x-+="
@@ -46,7 +48,7 @@ func main() {
 	display = gtk.Entry()
 	window := gtk.Window(gtk.GTK_WINDOW_TOPLEVEL)
 	window.SetTitle("Simple Go Calculator")
-	window.Connect("destroy", Quit, nil)
+	window.Connect("destroy", Quit)
 
 	// Vertical box containing all components
 	vbox := gtk.VBox(false, 1)
@@ -73,7 +75,7 @@ func main() {
 			gtk.GTK_MESSAGE_INFO,
 			gtk.GTK_BUTTONS_OK,
 			"Simple Go Calculator")
-		messagedialog.Response(func() {}, nil)
+		messagedialog.Response(func() {})
 		messagedialog.Run()
 		messagedialog.Destroy()
 	},
@@ -81,27 +83,48 @@ func main() {
 	filesubmenu.Append(aboutmenuitem)
 
 	resetmenuitem := gtk.MenuItemWithMnemonic("_Reset")
-	resetmenuitem.Connect("activate", func() { Reset(); display.SetText("0") }, nil)
+	resetmenuitem.Connect("activate", func() { Reset(); display.SetText("0") })
 	filesubmenu.Append(resetmenuitem)
 
 	exitmenuitem := gtk.MenuItemWithMnemonic("E_xit")
-	exitmenuitem.Connect("activate", Quit, nil)
+	exitmenuitem.Connect("activate", Quit)
 	filesubmenu.Append(exitmenuitem)
 
 	// Vertical box containing all buttons
 	buttons := gtk.VBox(false, 5)
 
+	bmap := map[string]*gtk.GtkButton{}
+
 	for i := 0; i < 4; i++ {
 		hbox := gtk.HBox(false, 5) // a horizontal box for each 4 buttons
 		for j := 0; j < 4; j++ {
 			b := gtk.ButtonWithLabel(string(nums[i*4+j]))
-			b.Clicked(Input(b), nil) //add click event
+			b.Clicked(Input(b)) //add click event
 			hbox.Add(b)
+			bmap[string(nums[i*4+j])] = b
 		}
 		buttons.Add(hbox) // add horizonatal box to vertical buttons' box
 	}
 
 	vbox.Add(buttons)
+
+	window.Connect("key-press-event", func(ctx *gtk.CallbackContext) bool {
+		arg := ctx.Args(0)
+		kev := *(**gdk.EventKey)(unsafe.Pointer(&arg))
+		c := (string(uint8(kev.Keyval % 0xff)))
+		if kev.Keyval == gdk.GDK_KEY_Return {
+			c = "="
+			return true
+		}
+		if b, ok := bmap[c]; ok {
+			Input(b)()
+		} else if kev.Keyval == gdk.GDK_KEY_Delete {
+			Reset();
+			display.SetText("0")
+			return true
+		}
+		return false
+	})
 
 	window.Add(vbox)
 	window.SetSizeRequest(250, 250)
