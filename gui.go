@@ -1,8 +1,9 @@
 package main
 
 import (
-	"gtk"
-	"gdk"
+	"github.com/mattn/go-gtk/gtk"
+	"github.com/mattn/go-gtk/glib"
+	"github.com/mattn/go-gtk/gdk"
 	"os"
 	"unsafe"
 	"strings"
@@ -108,7 +109,7 @@ func main() {
 
 	vbox.Add(buttons)
 
-	window.Connect("key-press-event", func(ctx *gtk.CallbackContext) bool {
+	window.Connect("key-press-event", func(ctx *glib.CallbackContext) bool {
 		arg := ctx.Args(0)
 		kev := *(**gdk.EventKey)(unsafe.Pointer(&arg))
 		c := (string(uint8(kev.Keyval % 0xff)))
