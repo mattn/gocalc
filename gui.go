@@ -47,6 +47,7 @@ func Input(b *gtk.GtkButton) func() {
 func main() {
 	gtk.Init(&os.Args)
 	display = gtk.Entry()
+	display.SetAlignment(1.0)
 	window := gtk.Window(gtk.GTK_WINDOW_TOPLEVEL)
 	window.SetTitle("Simple Go Calculator")
 	window.Connect("destroy", Quit)
