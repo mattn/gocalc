@@ -1,13 +1,13 @@
 package main
 
 import (
-	"github.com/mattn/go-gtk/gtk"
-	"github.com/mattn/go-gtk/glib"
 	"github.com/mattn/go-gtk/gdk"
+	"github.com/mattn/go-gtk/glib"
+	"github.com/mattn/go-gtk/gtk"
 	"os"
-	"unsafe"
-	"strings"
 	"strconv"
+	"strings"
+	"unsafe"
 )
 
 var (
@@ -26,7 +26,7 @@ func Quit() {
 func Input(b *gtk.GtkButton) func() {
 	return func() {
 		if strings.Index(operators, b.GetLabel()) != -1 {
-			val, _ := strconv.Atof32(display.GetText())
+			val, _ := strconv.ParseFloat(display.GetText(), 32)
 			Calculation(val, b.GetLabel())
 			display.SetText(GetResult())
 			inputMode = false
@@ -119,8 +119,9 @@ func main() {
 		}
 		if b, ok := bmap[c]; ok {
 			Input(b)()
+			b.GrabFocus()
 		} else if kev.Keyval == gdk.GDK_KEY_Delete {
-			Reset();
+			Reset()
 			display.SetText("0")
 			return true
 		}
