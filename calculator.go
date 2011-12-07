@@ -6,13 +6,13 @@ import (
 
 // Stores the result of calculations
 var result struct {
-	last     float32 // stores last result
+	last     float64 // stores last result
 	operator string  // the next operator to use
 	active   bool    // whether calculation has started
 }
 
 // Perform calculation
-func Calculation(val float32, operator string) {
+func Calculation(val float64, operator string) {
 	if !result.active {
 		result.last = val
 		result.operator = operator
