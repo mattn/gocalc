@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	display   *gtk.GtkEntry // where values are displayed
+	display   *gtk.Entry // where values are displayed
 	inputMode = true
 	nums      = "789/456x123-0.=+"
 	operators = "/x-+="
@@ -23,7 +23,7 @@ func Quit() {
 }
 
 // Action to be performed by each button, returns a handler function
-func Input(b *gtk.GtkButton) func() {
+func Input(b *gtk.Button) func() {
 	return func() {
 		if strings.Index(operators, b.GetLabel()) != -1 {
 			val, _ := strconv.ParseFloat(display.GetText(), 32)
@@ -46,17 +46,17 @@ func Input(b *gtk.GtkButton) func() {
 
 func main() {
 	gtk.Init(&os.Args)
-	display = gtk.Entry()
+	display = gtk.NewEntry()
 	display.SetAlignment(1.0)
-	window := gtk.Window(gtk.GTK_WINDOW_TOPLEVEL)
+	window := gtk.NewWindow(gtk.WINDOW_TOPLEVEL)
 	window.SetTitle("Simple Go Calculator")
 	window.Connect("destroy", Quit)
 
 	// Vertical box containing all components
-	vbox := gtk.VBox(false, 1)
+	vbox := gtk.NewVBox(false, 1)
 
 	// Menu bar
-	menubar := gtk.MenuBar()
+	menubar := gtk.NewMenuBar()
 	vbox.PackStart(menubar, false, false, 0)
 
 	// Add calculator display to vertical box
@@ -64,18 +64,18 @@ func main() {
 	vbox.Add(display)
 
 	// Menu items
-	filemenu := gtk.MenuItemWithMnemonic("_File")
+	filemenu := gtk.NewMenuItemWithMnemonic("_File")
 	menubar.Append(filemenu)
-	filesubmenu := gtk.Menu()
+	filesubmenu := gtk.NewMenu()
 	filemenu.SetSubmenu(filesubmenu)
 
-	aboutmenuitem := gtk.MenuItemWithMnemonic("_About")
+	aboutmenuitem := gtk.NewMenuItemWithMnemonic("_About")
 	aboutmenuitem.Connect("activate", func() {
-		messagedialog := gtk.MessageDialog(
+		messagedialog := gtk.NewMessageDialog(
 			window.GetTopLevelAsWindow(),
-			gtk.GTK_DIALOG_MODAL,
-			gtk.GTK_MESSAGE_INFO,
-			gtk.GTK_BUTTONS_OK,
+			gtk.DIALOG_MODAL,
+			gtk.MESSAGE_INFO,
+			gtk.BUTTONS_OK,
 			"Simple Go Calculator")
 		messagedialog.Response(func() {})
 		messagedialog.Run()
@@ -84,23 +84,23 @@ func main() {
 		nil)
 	filesubmenu.Append(aboutmenuitem)
 
-	resetmenuitem := gtk.MenuItemWithMnemonic("_Reset")
+	resetmenuitem := gtk.NewMenuItemWithMnemonic("_Reset")
 	resetmenuitem.Connect("activate", func() { Reset(); display.SetText("0") })
 	filesubmenu.Append(resetmenuitem)
 
-	exitmenuitem := gtk.MenuItemWithMnemonic("E_xit")
+	exitmenuitem := gtk.NewMenuItemWithMnemonic("E_xit")
 	exitmenuitem.Connect("activate", Quit)
 	filesubmenu.Append(exitmenuitem)
 
 	// Vertical box containing all buttons
-	buttons := gtk.VBox(false, 5)
+	buttons := gtk.NewVBox(false, 5)
 
-	bmap := map[string]*gtk.GtkButton{}
+	bmap := map[string]*gtk.Button{}
 
 	for i := 0; i < 4; i++ {
-		hbox := gtk.HBox(false, 5) // a horizontal box for each 4 buttons
+		hbox := gtk.NewHBox(false, 5) // a horizontal box for each 4 buttons
 		for j := 0; j < 4; j++ {
-			b := gtk.ButtonWithLabel(string(nums[i*4+j]))
+			b := gtk.NewButtonWithLabel(string(nums[i*4+j]))
 			b.Clicked(Input(b)) //add click event
 			hbox.Add(b)
 			bmap[string(nums[i*4+j])] = b
@@ -114,14 +114,14 @@ func main() {
 		arg := ctx.Args(0)
 		kev := *(**gdk.EventKey)(unsafe.Pointer(&arg))
 		c := (string(uint8(kev.Keyval % 0xff)))
-		if kev.Keyval == gdk.GDK_KEY_Return {
+		if kev.Keyval == gdk.KEY_Return {
 			c = "="
 			return true
 		}
 		if b, ok := bmap[c]; ok {
 			Input(b)()
 			b.GrabFocus()
-		} else if kev.Keyval == gdk.GDK_KEY_Delete {
+		} else if kev.Keyval == gdk.KEY_Delete {
 			Reset()
 			display.SetText("0")
 			return true
